@@ -1,4 +1,4 @@
-/*
+﻿/*
  * TFDIRV2.cpp
  *
  *  Created on: Feb 12, 2018
@@ -6,13 +6,7 @@
  */
 
 #include <string>
-#include "PhasorContainerV2.h"
 #include "TFDIRV2.h"
-
-#ifndef PC_DEBUG
-    #include "dspDebugLog.h"
-    #include "TFDIR_MsgHandler.h"
-#endif
 
 TFDIRV2::TFDIRV2(PhasorContainerV2 * _phasorContainer)
 {
@@ -1327,10 +1321,11 @@ int TFDIRV2::TakeAction ()  // Report fault and normal V, I, P, Q
                 continue;
             if (PhasorContainerObj->IcsNode.IcsSet[i].OpenSw == 1 && PhasorContainerObj->IcsNode.IcsSet[i].Cfg->SwitchEnabled) {
                 if (!PhasorContainerObj->IcsNode.CtrlSusp)
+                    tfdirMsgHandler.SendValues(i, 0);
 //???? Call command function to issue opening control and fault zone
-                        else
+                else
 //??? Call alarm for suspended switch control due to too low curret or voltage
-                PhasorContainerObj->IcsNode.IcsSet[i].OpenSw = 2;
+                    PhasorContainerObj->IcsNode.IcsSet[i].OpenSw = 2;
             }
         }
     }
@@ -1349,20 +1344,11 @@ int TFDIRV2::TakeAction ()  // Report fault and normal V, I, P, Q
 				printf ("Command: Open Switch of Set-%1d \n", i+1);
 				printf ("-----------------------------------------------------------------\n\n");
 				PhasorContainerObj->IcsNode.IcsSet[i].OpenSw++; // mark as proceesed status
-
-				//send the open command to the ARM so it can set the coil on modbus
-#ifndef PC_DEBUG
-				tfdirMsgHandler.SendValues(i, 0);
-#endif
 			}
 			else if (PhasorContainerObj->IcsNode.IcsSet[i].OpenSw == 2 && PhasorContainerObj->IcsNode.TrpCnt == 3) {
 				printf ("3rd Trip's Fault Zone: %d \n\n", PhasorContainerObj->IcsNode.IcsSet[i].Evt[2].FltZone);
 				PhasorContainerObj->IcsNode.IcsSet[i].OpenSw++; // mark as proceesed status
 
-				//send the open command to the ARM so it can set the coil on modbus
-#ifndef PC_DEBUG
-				tfdirMsgHandler.SendValues(i, 0);
-#endif
 			}
 		}
 	}
@@ -1658,6 +1644,7 @@ int TFDIRV2::TakeAction ()  // Report fault and normal V, I, P, Q
     return Error;
 }
 
+#ifdef PC_DEBUG
 //this is just to test the STC scenario
 void TFDIRV2::testSTC() {
     PHASOR pv[3], sv[3], pi[3], si[3];
@@ -1966,3 +1953,4 @@ void TFDIRV2::testSTC() {
 #endif
     }
 }
+#endif

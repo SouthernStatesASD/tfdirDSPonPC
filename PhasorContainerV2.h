@@ -11,8 +11,11 @@
 #include "Constants.h"
 
 #ifndef PC_DEBUG
-    #include "data_stream.h"
+#include "data_stream.h"
 #endif
+
+#ifndef PHASORCONTAINERV2_H_
+#define PHASORCONTAINERV2_H_
 
 #define M_PI        3.14159265358979323846264338327950288
 
@@ -336,7 +339,10 @@ public:
     //test samples
     void genRawSamples(); //testing only
     void genRawSamplesHardCoded();
+
+#ifdef PC_DEBUG
     int GetSamples(FLAG CallFlag);
+#endif
 
 private:
 
@@ -387,3 +393,5 @@ private:
     void processSmpSetData(DataStream& setDataStream, int set, int idx);
 #endif
 };
+
+#endif /* PHASORCONTAINERV2_H_ */

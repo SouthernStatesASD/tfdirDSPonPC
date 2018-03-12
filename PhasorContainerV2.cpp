@@ -9,9 +9,9 @@
 #include "PhasorContainerV2.h"
 
 #ifdef PC_DEBUG
-    #include "Comtrade.h"
+#include "Comtrade.h"
 #else
-    #include "dspDebugLog.h"
+#include "dspDebugLog.h"
 #endif
 
 PhasorContainerV2::PhasorContainerV2() {
@@ -48,7 +48,7 @@ int PhasorContainerV2::Configure(FLAG SetOption, char *configContents) {
     int Error = 0;
     float x = 0.0;
     float y = 6.2831853/float(SV_CYC_SIZE); // Gradia/SV = 2Pi/Ncycle
-                                            // Gradian/SV = 2Pi*Tsv/Tcycle - Tcycle = 1000/f (ms)
+    // Gradian/SV = 2Pi*Tsv/Tcycle - Tcycle = 1000/f (ms)
 // Cold Start
     if (!SetOption) {
         memset(&IcsNode, 0, sizeof(ICS_NODE));
@@ -660,7 +660,7 @@ int PhasorContainerV2::checkNode(){
         }
         else if(nodeFound[j] > 1) {
             printf("Node parameter: %s, has %d name conflicts within the length of %d characters \n",
-                       nodeFlagParams[i], nodeFound[j], NAME_LEN);
+                   nodeFlagParams[i], nodeFound[j], NAME_LEN);
             Error++;
         }
         i++;
@@ -674,7 +674,7 @@ int PhasorContainerV2::checkNode(){
         }
         else if(nodeFound[j] > 1) {
             printf("Node parameter: %s, has %d name conflicts within the length of %d characters \n",
-                       nodeFloatParams[i], nodeFound[j], NAME_LEN);
+                   nodeFloatParams[i], nodeFound[j], NAME_LEN);
             Error++;
         }
         i++;
@@ -692,7 +692,7 @@ int PhasorContainerV2::checkSet(){
         }
         else if(setFound[j] > 1) {
             printf("Set parameter: %s, has %d name conflicts within the length of %d characters \n",
-                       setFloatParams[i], setFound[j], NAME_LEN);
+                   setFloatParams[i], setFound[j], NAME_LEN);
             Error++;
         }
         i++;
@@ -706,7 +706,7 @@ int PhasorContainerV2::checkSet(){
         }
         else if(setFound[j] > 1) {
             printf("Set parameter: %s, has %d name conflicts within the length of %d characters \n",
-                       setFlagParams[i], setFound[j], NAME_LEN);
+                   setFlagParams[i], setFound[j], NAME_LEN);
             Error++;
         }
         i++;
@@ -724,7 +724,7 @@ int PhasorContainerV2::checkSns(){
         }
         else if(snsFound[i] > 1) {
             printf("Sensor parameter: %s, has %d name conflicts within the length of %d characters \n",
-                       sensorFlagParams[i], snsFound[i], NAME_LEN);
+                   sensorFlagParams[i], snsFound[i], NAME_LEN);
             Error++;
         }
         i++;
@@ -837,7 +837,7 @@ void PhasorContainerV2::CalibVolt ()
     }
 
 #ifndef PC_DEBUG
-//??? Call external function to get PT voltage
+    //??? Call external function to get PT voltage
 #endif
 
     if (1.732*IcsNode.VmPT > 1.15*IcsNode.Cfg->Vrated || IcsNode.VmPT < 0.85*IcsNode.Cfg->Vrated)
@@ -874,9 +874,9 @@ void PhasorContainerV2::CalibVolt ()
 
 #ifdef PC_DEBUG
         printf ("\n DynClib Set(%2d): %6.3f/%6.3f  %6.3f/%6.3f  %6.3f/%6.3f\n\n", i,
-	IcsNode.IcsSet[i].IcsSns[0].Vmdcf, IcsNode.IcsSet[i].IcsSns[0].Vadcf,
-	IcsNode.IcsSet[i].IcsSns[1].Vmdcf, IcsNode.IcsSet[i].IcsSns[1].Vadcf,
-	IcsNode.IcsSet[i].IcsSns[2].Vmdcf, IcsNode.IcsSet[i].IcsSns[2].Vadcf);
+                IcsNode.IcsSet[i].IcsSns[0].Vmdcf, IcsNode.IcsSet[i].IcsSns[0].Vadcf,
+                IcsNode.IcsSet[i].IcsSns[1].Vmdcf, IcsNode.IcsSet[i].IcsSns[1].Vadcf,
+                IcsNode.IcsSet[i].IcsSns[2].Vmdcf, IcsNode.IcsSet[i].IcsSns[2].Vadcf);
 #endif
     }
 
@@ -1007,6 +1007,7 @@ void PhasorContainerV2::genRawSamplesHardCoded() {//test only
     }
 }
 
+#ifdef PC_DEBUG
 int PhasorContainerV2::GetSamples(FLAG CallFlag)
 {
     int i, j, k, m, n;
@@ -1125,6 +1126,7 @@ int PhasorContainerV2::GetSamples(FLAG CallFlag)
     }
     return error;
 }
+#endif
 
 #ifndef PC_DEBUG
 void PhasorContainerV2::addNewSample(DataStream& setDataStream, int set) {
