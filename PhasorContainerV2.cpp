@@ -1197,7 +1197,7 @@ void PhasorContainerV2::processSmpSetData(DataStream& setDataStream, int set, in
         setSmpSetValues(set, phase, idx, setDataStream.data.sample.currentNow, setDataStream.data.sample.voltageNow);
         setSmpSetValues(set, phase, idx+1, setDataStream.data.sample.current0_5msAgo, setDataStream.data.sample.voltageNow); //needs to be voltage0_5msAgo
 
-        double curSampleTime = setDataStream.data.time.secs + (double)setDataStream.data.time.nsecs/1000000000.0;
+//      double curSampleTime = setDataStream.data.time.secs + (double)setDataStream.data.time.nsecs/1000000000.0;
 //		printf("DSP: new Sample time=%f, idx=%d, I=%f, V=%f", curSampleTime, idx, SmpNode.SmpSet[set].I[phase][idx], SmpNode.SmpSet[set].V[phase][idx]);
 //		printf("DSP: new Sample2 time=%f, idx=%d, I=%f, V=%f", curSampleTime, idx+1, SmpNode.SmpSet[set].I[phase][idx+1], SmpNode.SmpSet[set].I[phase][idx+1]);
     }

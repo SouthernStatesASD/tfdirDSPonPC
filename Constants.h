@@ -30,6 +30,8 @@
 
 #define LINE_READ_BUFFER 100
 
+#define CFG_FILE_PATH "/Users/stevefan/Documents/SS/TFDIR/TFDIR src/src-03-06-2018/AEPhan.x"    //Testing only!!!
+
 typedef unsigned short FLAG;
 
 // Enumerations
