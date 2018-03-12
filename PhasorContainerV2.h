@@ -1,4 +1,4 @@
-/*
+﻿/*
  * PhasorContainer.h
  *
  *  Created on: Feb 12, 2018
@@ -10,7 +10,7 @@
 #include "phasor.h"
 #include "Constants.h"
 
-#ifndef PC_DEBUG
+#ifndef RUNNING_TEST
 #include "data_stream.h"
 #endif
 
@@ -326,7 +326,7 @@ public:
     void fft(float *X, float *Y, float *C, float *S, float *SV, int K);
     int MatInv(float *b, float *a, int n);
 
-#ifndef PC_DEBUG
+#ifndef RUNNING_TEST
     void addNewSample(DataStream& setDataStream, int set);
 #endif
     int Configure(FLAG SetOption, char *configContents);
@@ -340,7 +340,7 @@ public:
     void genRawSamples(); //testing only
     void genRawSamplesHardCoded();
 
-#ifdef PC_DEBUG
+#ifdef RUNNING_TEST
     int GetSamples(FLAG CallFlag);
 #endif
 
@@ -389,7 +389,7 @@ private:
     int numSamplesAway(double time, double timeRef);
     void setSmpSetValues(int set, int phase, int idx, float i, float v);
 
-#ifndef PC_DEBUG
+#ifndef RUNNING_TEST
     void processSmpSetData(DataStream& setDataStream, int set, int idx);
 #endif
 };

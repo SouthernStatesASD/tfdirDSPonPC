@@ -1644,7 +1644,7 @@ int TFDIRV2::TakeAction ()  // Report fault and normal V, I, P, Q
     return Error;
 }
 
-#ifdef PC_DEBUG
+#ifdef RUNNING_TEST
 //this is just to test the STC scenario
 void TFDIRV2::testSTC() {
     PHASOR pv[3], sv[3], pi[3], si[3];

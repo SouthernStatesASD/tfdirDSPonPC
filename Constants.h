@@ -7,6 +7,7 @@
 
 #define PC_DEBUG		// PC Version Debugging
 #define PC_DEBUG_STEP
+#define RUNNING_TEST
 
 #define NAME_LEN        20      // Name length
 #define EVT_SIZE  	     5		// Fault history event size

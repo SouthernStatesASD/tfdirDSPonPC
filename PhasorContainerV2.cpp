@@ -8,7 +8,7 @@
 #include <stdio.h>
 #include "PhasorContainerV2.h"
 
-#ifdef PC_DEBUG
+#ifdef RUNNING_TEST
 #include "Comtrade.h"
 #else
 #include "dspDebugLog.h"
@@ -1007,7 +1007,7 @@ void PhasorContainerV2::genRawSamplesHardCoded() {//test only
     }
 }
 
-#ifdef PC_DEBUG
+#ifdef RUNNING_TEST
 int PhasorContainerV2::GetSamples(FLAG CallFlag)
 {
     int i, j, k, m, n;

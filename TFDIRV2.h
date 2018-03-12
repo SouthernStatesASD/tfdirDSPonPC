@@ -26,7 +26,7 @@ public:
 
     void run();
 
-#ifdef PC_DEBUG
+#ifdef RUNNING_TEST
     void testSTC();
 #endif
 
