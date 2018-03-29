@@ -10,7 +10,7 @@
 #define RUNNING_TEST
 
 #define NAME_LEN        20      // Name length
-#define EVT_SIZE  	     5		// Fault history event size
+#define EVT_SIZE  	     6		// Fault history event size
 #define MAX_SETS         3      // Plus the calculated 3rd set for T-Tap
 #define MES_PHASES       3      // Measured Number of phases
 #define CAL_PHASES       4      // 3 + Calculated neutral phase
@@ -30,7 +30,10 @@
 
 #define LINE_READ_BUFFER 100
 
-#define CFG_FILE_PATH "/Users/stevefan/Documents/SS/TFDIR/TFDIR src/src-03-06-2018/AEPhan.x"    //Testing only!!!
+//#define CFG_FILE_PATH "C:/Users/jfan/Workspace_v6.0/TFDIR/src/xGTCsim.x"
+//#define CFG_FILE_PATH "C:/Users/jfan/Workspace_v6.0/TFDIR/src/xAEPhuff.x"
+//#define CFG_FILE_PATH "C:/Users/jfan/Workspace_v6.0/TFDIR/src/xAEPhan.x"
+#define CFG_FILE_PATH "C:/Users/jfan/Workspace_v6.0/TFDIR/src/xFirstEnergy.x"
 
 typedef unsigned short FLAG;
 

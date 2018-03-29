@@ -229,6 +229,9 @@ int PhasorContainerV2::parseConfig(char *configContents) {
             "ServiceFlag",
             "VirtualFlag",
             "SetTypeFlag",
+            "TapReclNum",
+            "FltZone",
+            "UseFltZone",
             "SwitchEnabled",
             NULL
     };
@@ -242,12 +245,6 @@ int PhasorContainerV2::parseConfig(char *configContents) {
             "Xs0",
             "Rs1",
             "Xs1",
-            //		"VMaa", // Voltage model matrix (symetrical)
-            //		"VMab",
-            //		"VMac",
-            //		"VMbb",
-            //		"VMbc",
-            //		"VMcc",
             "AmpSclFactor",	 // Amp Scale factor to actual engineering value from what measured
             "AmpAngOffset",	 // Amp angle offset (0/+/-: none/Add/Subtract to/from the angle measured
             "VoltSclFactor", // Amp Scale factor to actual engineering value from what measured
@@ -265,7 +262,6 @@ int PhasorContainerV2::parseConfig(char *configContents) {
             "NeutralSettingDB",
             NULL
     };
-    ///
 
     char *_sensorFlagParams[] = {
             "SequenceNum",
@@ -546,6 +542,9 @@ void PhasorContainerV2::populateSet(PARAM param, CFG_SET *Set){
             &Set->SrvFlg,
             &Set->VrtFlg,
             &Set->SetTyp,
+            &Set->TapReclNum,
+            &Set->FltZone,
+            &Set->UseFltZone,
             &Set->SwitchEnabled,
             NULL
     };
@@ -873,7 +872,7 @@ void PhasorContainerV2::CalibVolt ()
         vm = (vm < yv)? vm : yv; // select the smallest;
 
 #ifdef PC_DEBUG
-        printf ("\n DynClib Set(%2d): %6.3f/%6.3f  %6.3f/%6.3f  %6.3f/%6.3f\n\n", i,
+        printf ("\n Dynamic Calibration for Set(%2d): %6.3f/%6.3f  %6.3f/%6.3f  %6.3f/%6.3f\n\n", i+1,
                 IcsNode.IcsSet[i].IcsSns[0].Vmdcf, IcsNode.IcsSet[i].IcsSns[0].Vadcf,
                 IcsNode.IcsSet[i].IcsSns[1].Vmdcf, IcsNode.IcsSet[i].IcsSns[1].Vadcf,
                 IcsNode.IcsSet[i].IcsSns[2].Vmdcf, IcsNode.IcsSet[i].IcsSns[2].Vadcf);
@@ -1242,7 +1241,7 @@ void PhasorContainerV2::calcPhasors() {
             IcsNode.IcsSet[i].IcsSns[l].Ibuf[0].flg = SmpNode.SmpSet[i].Iflg[k];
             IcsNode.IcsSet[i].IcsSns[l].Vbuf[0].t   = SmpNode.SmpSet[i].t;
             IcsNode.IcsSet[i].IcsSns[l].Vbuf[0].flg = SmpNode.SmpSet[i].Vflg[k];
-            if (!SmpNode.SmpSet[i].Iflg[k]) {
+            if (!SmpNode.SmpSet[i].Iflg[k] && SmpNode.SmpSet[i].NumI[k] > 0) {
                 x = y = 0.0;
 
 //				phasor_calc(&IP, SmpNode.SmpSet[i].I[k]);
@@ -1265,7 +1264,7 @@ void PhasorContainerV2::calcPhasors() {
                 IcsNode.IcsSet[i].IcsSns[j].Ibuf[0].y = IcsNode.IcsSet[i].IcsSns[j].Ibuf[1].y;
             }
 
-            if (!SmpNode.SmpSet[i].Vflg[j]) {
+            if (!SmpNode.SmpSet[i].Vflg[j] && SmpNode.SmpSet[i].NumV[k] > 0) {
                 x = y = 0.0;
 
 //				phasor_calc(&VP, SmpNode.SmpSet[i].V[k]);

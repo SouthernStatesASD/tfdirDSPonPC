@@ -7,6 +7,7 @@
 
 #include <string>
 #include "TFDIRV2.h"
+#include "PhasorContainerV2.h"
 
 #ifdef RUNNING_TEST
     #include <fstream>
@@ -898,8 +899,8 @@ void TFDIRV2::DetectFault()		// Fault detection
     if (hot) { // at least one line is hot
         if (firsthot == hot) {
             PhasorContainerObj->IcsNode.DnTimer = 0.0;
-            if (PhasorContainerObj->IcsNode.TrpCnt > 0)
-                PhasorContainerObj->IcsNode.RclCnt += (PhasorContainerObj->IcsNode.RclCnt < PhasorContainerObj->IcsNode.Cfg->MaxRclNum) ? 1 : 0;
+            if (PhasorContainerObj->IcsNode.TrpCnt > PhasorContainerObj->IcsNode.RclCnt)
+                PhasorContainerObj->IcsNode.RclCnt++;
         }
         PhasorContainerObj->IcsNode.UpTimer += PhasorContainerObj->IcsNode.Cycle2Sec;
         if (PhasorContainerObj->IcsNode.UpTimer >= PhasorContainerObj->IcsNode.Cfg->HotTime)  // Line is successfully energized no trip again
@@ -910,13 +911,63 @@ void TFDIRV2::DetectFault()		// Fault detection
         if (firstdead > 0) {
 //			if(IcsNode.LchFlg == 2)
             PhasorContainerObj->IcsNode.TrpCnt++;
+/*** For skipping the no-fault trips during one side reclosing
+            m = 1;
+            if(PhasorContainerObj->IcsNode.TrpCnt >= 2) {
+                m = 0;
+                for (i = 0; i < MAX_SETS; i++) {
+                    s = &PhasorContainerObj->IcsNode.IcsSet[i];
+                    if (!s->Cfg->SrvFlg)
+                        continue;
+                    if (s->FltZone > 0) {
+                        m++;
+                        break;
+                    }
+                    else {
+                        if (s->Evt[0].FltZone == 1) {
+                            m++;
+                            break;
+                        }
+                        else {
+                            for (j = 1; j < PhasorContainerObj->IcsNode.TrpCnt; j++) {
+                                if (s->Evt[j].FltFlg) {
+                                    m++;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            if (!m)
+                PhasorContainerObj->IcsNode.TrpCnt--;
+***/
             if(PhasorContainerObj->IcsNode.Cfg->AutoSwitchOpen) { // Auto open switch for the faulted zone
                 for (i = 0; i < MAX_SETS; i++) {
                     s = &PhasorContainerObj->IcsNode.IcsSet[i];
                     if (!s->Cfg->SrvFlg)
                         continue;
                     if (s->Evt[0].FltDirSum == FAULT_BACKWARD || (PhasorContainerObj->IcsNode.TrpCnt == 2 && s->Evt[1].FltDirSum == FAULT_BACKWARD)) {
-                        if ((PhasorContainerObj->IcsNode.TrpCnt == 2 && (s->Evt[0].FltZone == 1 || s->Evt[1].FltZone == 1 || s->Cfg->SetTyp == SET_TYPE_TAP)) ||
+                        if (s->Cfg->UseFltZone) {
+                            if(PhasorContainerObj->IcsNode.TrpCnt == s->Cfg->FltZone + 1) {
+                                s->FltZone = s->Cfg->FltZone;
+                                s->OpenSw = (s->OpenSw == 0) ? 1 : s->OpenSw;
+                                if (s->Cfg->SetTyp == SET_TYPE_TAP &&
+                                    !s->Cfg->SwitchEnabled) { // Tap switch is not available to open
+                                    stat = s->FltZone;
+                                    for (j = 0; j < MAX_SETS; j++) {
+                                        s = &PhasorContainerObj->IcsNode.IcsSet[j];
+                                        if (!s->Cfg->SrvFlg)
+                                            continue;
+                                        if (s->Cfg->SetTyp == SET_TYPE_LINE) {
+                                            s->FltZone = (s->OpenSw == 0) ? stat : s->FltZone;
+                                            s->OpenSw = (s->OpenSw == 0) ? 1 : s->OpenSw;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        else if ((PhasorContainerObj->IcsNode.TrpCnt == 2 && (s->Evt[0].FltZone == 1 || s->Evt[1].FltZone == 1 || s->Cfg->SetTyp == SET_TYPE_TAP)) ||
                             (PhasorContainerObj->IcsNode.TrpCnt == 3 && (s->Evt[0].FltZone <= 2 || s->Evt[1].FltZone <= 2 || s->Evt[2].FltZone <= 2)) ||
                             (PhasorContainerObj->IcsNode.TrpCnt == 1 && (s->Evt[0].FltZone == 1 || s->Cfg->SetTyp == SET_TYPE_TAP) &&
                              PhasorContainerObj->IcsNode.DnTimer >= PhasorContainerObj->IcsNode.Cfg->RclWaitTime)) {
@@ -1257,13 +1308,16 @@ printf ("Radial(2-3Phase Fault): a =%6.4f \nDist =%6.4f \n", a, r);
 #ifdef PC_DEBUG
         printf ("Fault Zone: %d \n\n", evt->FltZone);
 #endif
-        if (a >= 0.0 && a <= 1.0) {
+        if ((a >= 0.0 && a <= 1.0) || s->Cfg->FltZone > 0) {
             if(evt == &localEvt) { // choice the best distance results between the tripEvt log and localEvt log
-                if(evt->FltZone < s->Evt[PhasorContainerObj->IcsNode.TrpCnt].FltZone) {
+                if(evt->FltZone > 0 && evt->FltZone < s->Evt[PhasorContainerObj->IcsNode.TrpCnt].FltZone) {
                     s->Evt[PhasorContainerObj->IcsNode.TrpCnt].FltDist = localEvt.FltDist;
                     s->Evt[PhasorContainerObj->IcsNode.TrpCnt].FltZone = localEvt.FltZone;
                 }
             }
+
+            if (!s->Cfg->UseFltZone && s->Cfg->FltZone > 0 && s->Cfg->FltZone < s->Evt[PhasorContainerObj->IcsNode.TrpCnt].FltZone)
+                s->Evt[PhasorContainerObj->IcsNode.TrpCnt].FltZone = s->Cfg->FltZone;
 
             for (i = 0; i < MAX_SETS; i++) { // Set the fault distance to the Forward Direction also
                 if (!PhasorContainerObj->IcsNode.IcsSet[i].Cfg->SrvFlg || s == &PhasorContainerObj->IcsNode.IcsSet[i])  // the ICS Set is not in service, skip the set
@@ -1304,7 +1358,7 @@ int TFDIRV2::TakeAction ()  // Report fault and normal V, I, P, Q
             trpcnt = PhasorContainerObj->IcsNode.TrpCnt;
 #ifdef PC_DEBUG
             printf ("###############################\n");
-	printf ("DFR Trigger: ON (Prior to Trip:%d) \n", PhasorContainerObj->IcsNode.TrpCnt+1);
+	printf ("DFR Trigger: ON (Prior to Faulted Trip:%d) \n", PhasorContainerObj->IcsNode.TrpCnt+1);
 	printf ("###############################\n\n");
 #else
 //??? Call DFR function which will be activated to record 10 - 15 sycles before the trigger time
@@ -1756,7 +1810,7 @@ void TFDIRV2::testSTC() {
 #ifdef PC_DEBUG
         if (PhasorContainerObj->IcsNode.RclCnt > k) {
 			k = PhasorContainerObj->IcsNode.RclCnt;
-			printf("Reclose #: %d\n", k);
+			printf("Reclose #:%d Following  the Faulted Trip\n", k);
 		}
 #endif
     }

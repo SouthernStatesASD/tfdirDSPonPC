@@ -90,12 +90,14 @@ typedef struct { // Configuration ICS Set for Smart Tap
     FLAG  SrvFlg;				  // The ICS Set installation/service flag 0/1 -> no/yes
     FLAG  VrtFlg;				  // The ICS Set real/virtual flag 0/1 -> real/virtual
     FLAG  SetTyp;				  // The ICS Set for Tapped-off line flag 0/1 -> TransLine/TapLine
+    FLAG  TapReclNum;             // Number of reclosing fails for a Tap-Line fault to open this set's switch
+    FLAG  FltZone;                // Configured fault zone based on Tap location in the line: 0/NA,1,2,3,4
+    FLAG  UseFltZone;             // 0/1: Use distance or FltZone (whichever is the smaller)/Use FltZone only
     FLAG  SwitchEnabled;		  // The corresponding Set Switch is enable for operation 0/1 - > No/Yes
     RX	  Z0;					  // Zero sequence impedance of the line segment, Ohm/mile
     RX	  Z1;					  // Positive/Negative sequence impedance of the line, Ohm/unit
     RX	  Zs0;					  // Zero sequence impedance of the equivalent source
     RX	  Zs1;					  // Positive/Negative sequence impedance of the equivalent source
-
     float AmpSclFactor;			  // Amp Scale factor to actual engineering value from what measured
     float AmpAngOffset;			  // Amp angle offset (0/+/-: none/Add/Subtract to/from the angle measured
     float VoltSclFactor;		  // Amp Scale factor to actual engineering value from what measured

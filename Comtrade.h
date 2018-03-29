@@ -12,10 +12,10 @@ typedef unsigned int uint_32;
 //#define	PKTperCYCLE 8
 #define	PKTperCYCLE 1
 #define SAMPLESperPKT (SAMPLESperCYCLE/PKTperCYCLE)
-#define SV_CFG_PATH "/Users/stevefan/Documents/SS/TFDIR/TFDIR src/src-03-06-2018/"
-//#define SV_CFG_PATH "C:/Users/jfan/Workspace_v6.0/TFDIR/Data/GTC-SIM/"
-//#define SV_CFG_PATH "C:/Users/jfan/Workspace_v6.0/TFDIR/Data/ICS/"
-//#define SV_CFG_PATH "C:/Users/jfan/Workspace_v6.0/TFDIR/Data/Lumpkin/"
+//#define SV_CFG_PATH "C:/Users/jfan/Workspace_v6.0/TFDIR/Data/GTCsim/"
+//#define SV_CFG_PATH "C:/Users/jfan/Workspace_v6.0/TFDIR/Data/AEPhuff/"
+//#define SV_CFG_PATH "C:/Users/jfan/Workspace_v6.0/TFDIR/Data/AEPhan/"
+#define SV_CFG_PATH "C:/Users/jfan/Workspace_v6.0/TFDIR/Data/FirstEnergy/"
 
 #define LINE_BUFFER 150
 #define NUM_SIGNALS 6
