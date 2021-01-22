@@ -6,11 +6,11 @@
 #define CONSTANTS_H_
 
 #define PC_DEBUG		// PC Version Debugging
-#define PC_DEBUG_STEP
+//#define PC_DEBUG_STEP
 #define RUNNING_TEST
 
 #define NAME_LEN        20      // Name length
-#define EVT_SIZE  	     6		// Fault history event size
+#define EVT_SIZE  	     7		// Fault history event size
 #define MAX_SETS         3      // Plus the calculated 3rd set for T-Tap
 #define MES_PHASES       3      // Measured Number of phases
 #define CAL_PHASES       4      // 3 + Calculated neutral phase
@@ -30,10 +30,11 @@
 
 #define LINE_READ_BUFFER 100
 
-//#define CFG_FILE_PATH "C:/Users/jfan/Workspace_v6.0/TFDIR/src/xGTCsim.x"
-//#define CFG_FILE_PATH "C:/Users/jfan/Workspace_v6.0/TFDIR/src/xAEPhuff.x"
-//#define CFG_FILE_PATH "C:/Users/jfan/Workspace_v6.0/TFDIR/src/xAEPhan.x"
-#define CFG_FILE_PATH "C:/Users/jfan/Workspace_v6.0/TFDIR/src/xFirstEnergy.x"
+//#define CFG_FILE_PATH "C:/Users/jfan/Workspace_v6.0/TFDIR/Cfg/xGTCsim.x"
+//#define CFG_FILE_PATH "C:/Users/jfan/Workspace_v6.0/TFDIR/Cfg/xAEPhuff.x"
+//#define CFG_FILE_PATH "C:/Users/jfan/Workspace_v6.0/TFDIR/Cfg/xAEPhan.x"
+//#define CFG_FILE_PATH "C:/Users/jfan/Workspace_v6.0/TFDIR/Cfg/xFirstEnergy.x"
+#define CFG_FILE_PATH   "C:/Users/jfan/Workspace_v6.0/TFDIR/Cfg/xDom_F.x"
 
 typedef unsigned short FLAG;
 

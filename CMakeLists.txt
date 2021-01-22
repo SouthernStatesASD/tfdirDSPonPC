@@ -6,12 +6,11 @@ set(CMAKE_CXX_STANDARD 11)
 add_executable(
         tfdirDSPonPC
         main.cpp
-        PhasorContainerV2.cpp
-        PhasorContainerV2.h
-        TFDIRV2.cpp
-        TFDIRV2.h
+        TFDIRContainer.cpp
+        TFDIRContainer.h
         Comtrade.cpp
         Comtrade.h
         phasor.cpp
         phasor.h
+        data_stream.h
         Constants.h)

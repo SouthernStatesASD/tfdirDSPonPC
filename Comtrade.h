@@ -15,7 +15,8 @@ typedef unsigned int uint_32;
 //#define SV_CFG_PATH "C:/Users/jfan/Workspace_v6.0/TFDIR/Data/GTCsim/"
 //#define SV_CFG_PATH "C:/Users/jfan/Workspace_v6.0/TFDIR/Data/AEPhuff/"
 //#define SV_CFG_PATH "C:/Users/jfan/Workspace_v6.0/TFDIR/Data/AEPhan/"
-#define SV_CFG_PATH "C:/Users/jfan/Workspace_v6.0/TFDIR/Data/FirstEnergy/"
+//#define SV_CFG_PATH "C:/Users/jfan/Workspace_v6.0/TFDIR/Data/FirstEnergy/"
+#define SV_CFG_PATH "C:/Users/jfan/Workspace_v6.0/TFDIR/Data/Dominion/Test/"
 
 #define LINE_BUFFER 150
 #define NUM_SIGNALS 6

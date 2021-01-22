@@ -3,7 +3,7 @@
 #define PHASOR_H_
 
 #define SLOTS			(16)
-#define SLOTS2			(2*SLOTS)
+#define SLOTS2			(2*SLOTS-1)
 #define SLOTS_1			(SLOTS-1)
 #define DEGREES2PI 3.141592654/180.0
 #define SVDEGREE   0.18 // SV interval in degree = 360(360 degrees)/2000(NumSV per second)
