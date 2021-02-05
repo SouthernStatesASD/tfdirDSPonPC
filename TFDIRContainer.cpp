@@ -149,6 +149,9 @@ int TFDIRContainer::Configure(FLAG SetOption, char *configContents) {
 // Validate the parameters
         IcsNode.ToqAngLead = IcsNode.Cfg->MTA + 0.5*IcsNode.Cfg->TAW;
         IcsNode.ToqAngLag  = IcsNode.Cfg->MTA - 0.5*IcsNode.Cfg->TAW;
+
+        if (IcsNode.Cfg->DeadTime < 1.1*IcsNode.Cfg->RclWaitTime)
+            IcsNode.Cfg->DeadTime = 1.1*IcsNode.Cfg->RclWaitTime;
 // ?? Verify CT Polarities, CT/VT Rotations (ABC, not ACB)
 // ?? Verify the assignments of the phases at the right arrays (A,B,C to [0],[1],[2])
 
@@ -1227,7 +1230,7 @@ void TFDIRContainer::genRawSamplesHardCoded() {//test only
 }
 
 #ifdef RUNNING_TEST
-int TFDIRContainer::GetSamples(FLAG CallFlag)
+int TFDIRContainer::GetSamples(int CallFlag)
 {
     int i, j, k, m, n;
     int error = 0;
@@ -1348,7 +1351,7 @@ int TFDIRContainer::GetSamples(FLAG CallFlag)
     return error;
 }
 
-int TFDIRContainer::GetSamplesReversed(FLAG CallFlag)
+int TFDIRContainer::GetSamplesReversed(int CallFlag)
 {
     int i, j, k, m, n;
     int error = 0;
@@ -2459,6 +2462,11 @@ void TFDIRContainer::calcPhasors(int set, int phase) {
                     z += timeDiff * degreesPerSec;
                     MagAng2XY(&x, &y, &w, &z);
 
+                    // For yemporary use
+                    if (w < 2.0)
+                        IcsNode.IcsSet[i].IcsSns[l].Ibuf[0].flg - DATA_NO;
+                    else
+                        IcsNode.IcsSet[i].IcsSns[l].Ibuf[0].flg - DATA_NORMAL;
                     //this is the sync'd x,y for the given phase
                     IcsNode.IcsSet[i].IcsSns[l].Ibuf[0].x = x;
                     IcsNode.IcsSet[i].IcsSns[l].Ibuf[0].y = y;
@@ -2579,7 +2587,7 @@ void TFDIRContainer::calcPhasors(int set, int phase) {
                     y = w;
             }
 
-            if (y < 1.e4 && y > x) {
+            if (y < 1.e5 && y > x) {
                 x = y;
                 l = i;
             }
@@ -2589,13 +2597,15 @@ void TFDIRContainer::calcPhasors(int set, int phase) {
             for (j = 0; j < MES_PHASES; j++) {
                 memset(&IcsNode.IcsSet[k].IcsSns[j].Ibuf[0], 0, sizeof(XY));
                 memset(&IcsNode.IcsSet[k].IcsSns[j].Vbuf[0], 0, sizeof(XY));
+                IcsNode.IcsSet[k].IcsSns[j].Ibuf[0].flg = DATA_NO;
             }
 
             for (i = 0; i < MAX_SETS; i++) {
                 if (!IcsNode.IcsSet[i].Cfg->SrvFlg || IcsNode.IcsSet[i].Cfg->VrtFlg)
                     continue;
                 for (j = 0; j < MES_PHASES; j++) {
-//                    IcsNode.IcsSet[k].IcsSns[j].Ibuf[0].flg = IcsNode.IcsSet[i].IcsSns[j].Ibuf[0].flg;
+                    IcsNode.IcsSet[k].IcsSns[j].Ibuf[0].flg = (IcsNode.IcsSet[i].IcsSns[j].Ibuf[0].flg == DATA_NORMAL)?
+                            DATA_NORMAL : IcsNode.IcsSet[k].IcsSns[j].Ibuf[0].flg;
                     IcsNode.IcsSet[k].IcsSns[j].Ibuf[0].t = IcsNode.IcsSet[i].IcsSns[j].Ibuf[0].t;
                     IcsNode.IcsSet[k].IcsSns[j].Ibuf[0].x -= IcsNode.IcsSet[i].IcsSns[j].Ibuf[0].x;
                     IcsNode.IcsSet[k].IcsSns[j].Ibuf[0].y -= IcsNode.IcsSet[i].IcsSns[j].Ibuf[0].y;
@@ -3013,7 +3023,7 @@ void TFDIRContainer::SetAvg()		  // Set the V, I vectors from raw FFT vector buf
                 sn->Iist.mag = XY2Mag(b0->x, b0->y);
                 sn->Iist.ang = XY2Ang(b0->x, b0->y);
                 Setbit(s->LineFlg, sn->Phase); // Phase is On
-                if (sn->Iist.mag > IcsNode.Cfg->Imin) {
+                if (sn->Iist.mag >= 1.1*IcsNode.Cfg->Imin || sn->Ibuf[1].flg && sn->Iist.mag >= 0.9*IcsNode.Cfg->Imin) {
                     Setbit(s->IistFlg, sn->Phase); // Phase has good current
                     if (sn->Iist.mag >= s->Cfg->Ifm - s->Cfg->Ifdb &&
                         (Isbitset(sn->FltTyp0, FAULT_PHASE) || sn->Iist.mag >= s->Cfg->Ifm)) {
@@ -3883,7 +3893,7 @@ void TFDIRContainer::DetectFault()		// Fault detection
                         (k >= 2 && s->Evt[2].FltDirSum == FAULT_BACKWARD)) {
                         if (s->Cfg->UseCfgZone) {
                             if ((s->Cfg->UseCfgZone == 1 && k >= s->Cfg->CfgZone) ||
-                                (s->Cfg->UseCfgZone == 2 && k == s->Cfg->CfgZone+s->Cfg->CfgZone) ||
+                                (s->Cfg->UseCfgZone == 2 && k == s->Cfg->CfgZone+s->FltZone) ||
                                 (s->Cfg->UseCfgZone == 3 && s->FltZone == 1 && k == 1) ||
                                 (s->Cfg->UseCfgZone == 3 && s->FltZone == 2 && k == s->Cfg->CfgZone+2)) {
                                 if (s->Cfg->UseCfgZone == 1)
@@ -4172,7 +4182,7 @@ printf ("Simple T-Method: a =%6.4f \nDist =%6.4f \n\n", a, r);
             W2.x = -MagAng2Y(evt->If[m].mag, evt->If[m].ang) + MagAng2Y(evt->If[n].mag, evt->If[n].ang);
             x = W2.r*W2.r + W2.x*W2.x;
             W2 = VectX2(&W1, &W2);
-            a = -W2.x/(x*Zls2.x);
+            a = W2.x/(x*Zls2.x);     // For wo phase fault, the P2P curretn angle is independent of flow direction
             r = a*s->Cfg->LineLength;
             printf ("Radial(2-3Phase Fault): a =%6.4f, Dist =%6.4f", a, r);
             x = XY2Mag(W1.r, W1.x);     // Phase-Phase voltage

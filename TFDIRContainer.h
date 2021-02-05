@@ -425,8 +425,8 @@ public:
     void resetAllBuffers();
 
 #ifdef RUNNING_TEST
-    int GetSamples(FLAG CallFlag);
-    int GetSamplesReversed(FLAG CallFlag);
+    int GetSamples(int CallFlag);
+    int GetSamplesReversed(int CallFlag);
 #endif
 
 private:
