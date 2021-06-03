@@ -19,6 +19,8 @@
 #include "data_stream.h"
 #include "phasor.h"
 #include "Constants.h"
+#include "P2PComm.h"
+#include "Pathological.hpp"
 
 #ifndef RUNNING_TEST
 	#include "dspDebugLog.h"
@@ -128,6 +130,9 @@ typedef struct { // Configuration ICS Set for Smart Tap
     FLAG  CfgZone;                // Configured fault zone based on Tap location in the line: 0/NA,1,2,3,4
     FLAG  UseCfgZone;             // 0/1/2/3: Use FltZone/CfgZone /CfgZone+FltZone/CfgZone+FltZone(when FltZone=2 only)
     FLAG  SwitchEnabled;		  // The corresponding Set Switch is enable for operation 0/1 - > No/Yes
+    FLAG  PeerSrvFlg;             // This set's Comm. Peer service flag
+    FLAG  PeerSetSeqNum;          // Corresponding Peer's Set sequence number
+    float PeerNodeID;             // Corresponding Peer's Node ID, or an IP address number
     RX	  Z0;					  // Zero sequence impedance of the line segment, Ohm/mile
     RX	  Z1;					  // Positive/Negative sequence impedance of the line, Ohm/unit
     RX	  Zs0;					  // Zero sequence impedance of the equivalent source
@@ -152,13 +157,16 @@ typedef struct { // Configuration ICS Set for Smart Tap
 } CFG_SET;
 
 typedef struct { // Configuration ICS Node
-//	FLAG  PoleConfig;			  // Pole top configuration: 1/2/3/... Horizontal/Vertical/Triangle/...
+    float NodeID;                 // Node ID
+    FLAG  PeerCommFDIR;           // Peer Comm. Off/On: 0/1
+    //	FLAG  PoleConfig;			  // Pole top configuration: 1/2/3/... Horizontal/Vertical/Triangle/...
     FLAG  RptPermFlt;             // Disable/Enable permenent fault report: 0/1
     FLAG  RptTempFlt;			  // Disable/Enable temporary fault report: 0/1, with breaker trip, reclose succesful
     FLAG  RptMmtEvt;			  // Disable/Enable Momentary Event report: 0/1 for Momentary fault, no breaker trip
 //	FLAG  RptOpr;				  // Disable/Enable Operation Report 0/1
     FLAG  AutoSwitchOpen;		  // Automaticly open switch? 0/1: no/yes, open in T-FDIR
     FLAG  MaxRclNum;			  // Maximum reclosing time before locking out, e.g., 3 times
+    FLAG  TfdirRclNum;            // Number of reclosing fails for TFDIR to take action (0 or 1)
     float Da;					  // Distance of Phase A sensor to ground in meters
     float Db;					  // Distance of Phase B sensor to ground
     float Dc;					  // Distance of Phase C sensor to ground
@@ -353,6 +361,8 @@ using namespace MityDSP;
 
 class TFDIRContainer {
 public:
+    TIME  Time;
+
     int XY_Size, PHASOR_Size;
     float Ir, Vr, Ir_inv, Vr_inv;
     bool configLoaded;
@@ -362,6 +372,11 @@ public:
     ICS_NODE IcsNode;
     CFG_NODE CfgNode;
     SMP_NODE SmpNode;
+    P2P_NODE P2PNode;
+
+    Pathological *pathological;
+    OPERATINGMODE operatingMode;
+//    CONTROLMODE controlMode;
 
     CIRC_SAMPLES CircSamples;
     PHASORS PhasorsObj;
@@ -421,8 +436,15 @@ public:
     void SetFault();
     void DetectFault();
     int TakeAction ();
-
     void resetAllBuffers();
+
+    int  GetPeersMsgs();
+    int  SendPeersMsgs();
+    void InitP2PCfg();
+    void P2PFaultScheme();
+    void GetOprData();
+    void FromPeer();
+    void ToPeer();
 
 #ifdef RUNNING_TEST
     int GetSamples(int CallFlag);
@@ -495,6 +517,9 @@ private:
     int *snsFound;
 
     char **configContentsArray;
+
+    char msgCharBuffer[MSG_SIZE];
+    int P2P_MSGPACK_Size;
 
     char simline[LINE_READ_BUFFER];
     DataStream simDataStream_a;

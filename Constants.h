@@ -30,6 +30,9 @@
 
 #define LINE_READ_BUFFER 100
 
+#define P2P_PBUF_SIZE  100 // P2P package buff size
+#define P2PCOMM_LOST   900 // Set P2P Comm State as LOST (15 seconds without receiving a message from a peer)
+
 //#define CFG_FILE_PATH "C:/Users/jfan/Workspace_v6.0/TFDIR/Cfg/xGTCsim.x"
 //#define CFG_FILE_PATH "C:/Users/jfan/Workspace_v6.0/TFDIR/Cfg/xAEPhuff.x"
 //#define CFG_FILE_PATH "C:/Users/jfan/Workspace_v6.0/TFDIR/Cfg/xAEPhan.x"

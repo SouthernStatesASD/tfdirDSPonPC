@@ -1,0 +1,53 @@
+add_library(
+		configuration STATIC # SHARED / MODULE
+		src/configuration/configuration.cpp
+		src/configuration/configuration.hpp
+		src/configuration/Communication/Communication.cpp
+		src/configuration/Communication/Communication.h
+		src/configuration/ExternalConfiguration/ExternalConfiguration.cpp
+		src/configuration/ExternalConfiguration/ExternalConfiguration.hpp
+		src/configuration/Utility/Utility.cpp
+		src/configuration/Utility/Utility.hpp
+		src/configuration/Utility/Substation/Substation.cpp
+		src/configuration/Utility/Substation/Substation.hpp
+		src/configuration/Utility/Substation/Coordinate/Coordinate.cpp
+		src/configuration/Utility/Substation/Coordinate/Coordinate.hpp
+		src/configuration/Utility/Substation/ElectricalAsset/ElectricalAsset.cpp
+		src/configuration/Utility/Substation/ElectricalAsset/ElectricalAsset.hpp
+		src/configuration/Utility/Substation/ElectricalAsset/Setting/Setting.cpp
+		src/configuration/Utility/Substation/ElectricalAsset/Setting/Setting.h
+		src/configuration/Utility/Substation/ElectricalAsset/Terminal/Terminal.cpp
+		src/configuration/Utility/Substation/ElectricalAsset/Terminal/Terminal.h
+		src/configuration/Utility/Substation/ElectricalAssetType/ElectricalAssetType.cpp
+		src/configuration/Utility/Substation/ElectricalAssetType/ElectricalAssetType.h
+		src/configuration/Utility/Substation/ElectricalAssetType/Field/Field.cpp
+		src/configuration/Utility/Substation/ElectricalAssetType/Field/Field.h
+		src/configuration/Utility/Substation/ElectricalAssetType/Group/Group.cpp
+		src/configuration/Utility/Substation/ElectricalAssetType/Group/Group.h
+		src/configuration/Utility/Substation/ElectricalAssetType/Measurement/Measurement.cpp
+		src/configuration/Utility/Substation/ElectricalAssetType/Measurement/Measurement.h
+		src/configuration/Utility/Substation/ElectricalAssetType/Model/Model.cpp
+		src/configuration/Utility/Substation/ElectricalAssetType/Model/Model.h
+		src/configuration/Utility/Substation/ElectricalAssetType/PowerRating/PowerRating.cpp
+		src/configuration/Utility/Substation/ElectricalAssetType/PowerRating/PowerRating.h
+		src/configuration/Utility/Substation/ElectricalAssetType/Reference/Reference.cpp
+		src/configuration/Utility/Substation/ElectricalAssetType/Reference/Reference.h
+		src/configuration/Utility/Substation/ElectricalAssetType/Rule/Rule.cpp
+		src/configuration/Utility/Substation/ElectricalAssetType/Rule/Rule.h
+		src/configuration/Utility/Substation/ElectricalAssetType/RuleValue/RuleValue.cpp
+		src/configuration/Utility/Substation/ElectricalAssetType/RuleValue/RuleValue.h
+		src/configuration/Utility/Substation/ElectricalAssetType/Show/Show.cpp
+		src/configuration/Utility/Substation/ElectricalAssetType/Show/Show.h
+		src/configuration/Utility/Substation/ElectricalAssetType/Specification/Specification.cpp
+		src/configuration/Utility/Substation/ElectricalAssetType/Specification/Specification.h
+		src/configuration/Utility/Substation/ElectricalAssetType/Tab/Tab.cpp
+		src/configuration/Utility/Substation/ElectricalAssetType/Tab/Tab.h
+		src/configuration/Utility/Substation/Geometry/Geometry.cpp
+		src/configuration/Utility/Substation/Geometry/Geometry.hpp
+		src/configuration/Utility/Substation/Oneline/Oneline.cpp
+		src/configuration/Utility/Substation/Oneline/Oneline.hpp
+)
+
+include_directories(${PROJECT_SOURCE_DIR}/rapidjson/src)
+
+target_include_directories(configuration PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/src")

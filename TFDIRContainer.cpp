@@ -97,6 +97,7 @@ int TFDIRContainer::Configure(FLAG SetOption, char *configContents) {
     if (!SetOption) {
         memset(&IcsNode, 0, sizeof(ICS_NODE));
         memset(&CfgNode, 0, sizeof(CFG_NODE));
+        memset(&P2PNode, 0, sizeof(P2P_NODE));
 
 // Set pointer link to Confiuration structure
         IcsNode.Cfg = &CfgNode;
@@ -113,7 +114,14 @@ int TFDIRContainer::Configure(FLAG SetOption, char *configContents) {
 // Populate Configuration Structures from Configuration file
         Error = parseConfig(configContents);
 
+        P2PNode.NodeID = (int) (CfgNode.NodeID + 0.1);
+        P2PNode.PeerCommFDIR = CfgNode.PeerCommFDIR;
         for (i = 0; i < MAX_SETS; i++) {
+            P2PNode.Set[i].SrvFlg = CfgNode.CfgSet[i].SrvFlg;
+            P2PNode.Set[i].Peer.Cfg.PeerNodeID = (int) (CfgNode.CfgSet[i].PeerNodeID+0.1);
+            P2PNode.Set[i].Peer.Cfg.PeerSrvFlg = CfgNode.CfgSet[i].PeerSrvFlg;
+            P2PNode.Set[i].Peer.Cfg.PeerSetSeqNum = CfgNode.CfgSet[i].PeerSetSeqNum - 1;
+
             for (j = 0; j < MES_PHASES; j++) {
                 for (k = 0; k <= BUF_SIZE; k++) {
                     IcsNode.IcsSet[i].IcsSns[j].Ibuf[k].flg = 1;
@@ -150,8 +158,12 @@ int TFDIRContainer::Configure(FLAG SetOption, char *configContents) {
         IcsNode.ToqAngLead = IcsNode.Cfg->MTA + 0.5*IcsNode.Cfg->TAW;
         IcsNode.ToqAngLag  = IcsNode.Cfg->MTA - 0.5*IcsNode.Cfg->TAW;
 
-        if (IcsNode.Cfg->DeadTime < 1.1*IcsNode.Cfg->RclWaitTime)
-            IcsNode.Cfg->DeadTime = 1.1*IcsNode.Cfg->RclWaitTime;
+//        if (IcsNode.Cfg->DeadTime < 1.1*IcsNode.Cfg->RclWaitTime)
+//            IcsNode.Cfg->DeadTime = 1.1*IcsNode.Cfg->RclWaitTime;
+
+        if (IcsNode.Cfg->RtnTime < 1.05*IcsNode.Cfg->DeadTime)
+            IcsNode.Cfg->RtnTime = 1.05*IcsNode.Cfg->DeadTime;
+
 // ?? Verify CT Polarities, CT/VT Rotations (ABC, not ACB)
 // ?? Verify the assignments of the phases at the right arrays (A,B,C to [0],[1],[2])
 
@@ -231,16 +243,19 @@ int TFDIRContainer::parseConfig(char *configContents) {
     PARAM param;
 
     FLAG *_nodeFlagMap[] = {
+            &CfgNode.PeerCommFDIR,
             //		&CfgNode.PoleConfig,
             &CfgNode.RptPermFlt,
             &CfgNode.RptTempFlt,
             &CfgNode.RptMmtEvt,
             //		&CfgNode.RptOpr,
             &CfgNode.AutoSwitchOpen,
-            &CfgNode.MaxRclNum
+            &CfgNode.MaxRclNum,
+            &CfgNode.TfdirRclNum,
     };
 
     float *_nodeFloatMap[] = {
+            &CfgNode.NodeID,
             &CfgNode.Da,
             &CfgNode.Db,
             &CfgNode.Dc,
@@ -265,6 +280,7 @@ int TFDIRContainer::parseConfig(char *configContents) {
     };
 
     char *_nodeFlagParams[] = {
+            "PeerCommFDIR",
             //		"PoleConfig",
             "ReportPermFault",
             "ReportTempFault",
@@ -272,10 +288,12 @@ int TFDIRContainer::parseConfig(char *configContents) {
             //		"ReportOprValues",
             "AutoSwitchOpen",
             "NumOfRclsTimes",
+            "NumOfRclsForTFDIR",
             NULL
     };
 
     char *_nodeFloatParams[] = {
+            "NodeID",
             "Da",
             "Db",
             "Dc",
@@ -309,10 +327,13 @@ int TFDIRContainer::parseConfig(char *configContents) {
             "CfgZone",
             "UseCfgZone",
             "SwitchEnabled",
+            "PeerServiceFlag",
+            "PeerSetSeqNum",
             NULL
     };
 
     char *_setFloatParams[] = {
+            "PeerNodeID",
             "R0",
             "X0",
             "R1",
@@ -623,10 +644,13 @@ void TFDIRContainer::populateSet(PARAM param, CFG_SET *Set){
             &Set->CfgZone,
             &Set->UseCfgZone,
             &Set->SwitchEnabled,
+            &Set->PeerSrvFlg,
+            &Set->PeerSetSeqNum,
             NULL
     };
 
     float *setFloatMap[] = {
+            &Set->PeerNodeID,
             &(Set->Z0).r,
             &(Set->Z0).x,
             &(Set->Z1).r,
@@ -2462,11 +2486,11 @@ void TFDIRContainer::calcPhasors(int set, int phase) {
                     z += timeDiff * degreesPerSec;
                     MagAng2XY(&x, &y, &w, &z);
 
-                    // For yemporary use
+                    // For temporary use
                     if (w < 2.0)
-                        IcsNode.IcsSet[i].IcsSns[l].Ibuf[0].flg - DATA_NO;
+                        IcsNode.IcsSet[i].IcsSns[l].Ibuf[0].flg = DATA_NO;
                     else
-                        IcsNode.IcsSet[i].IcsSns[l].Ibuf[0].flg - DATA_NORMAL;
+                        IcsNode.IcsSet[i].IcsSns[l].Ibuf[0].flg = DATA_NORMAL;
                     //this is the sync'd x,y for the given phase
                     IcsNode.IcsSet[i].IcsSns[l].Ibuf[0].x = x;
                     IcsNode.IcsSet[i].IcsSns[l].Ibuf[0].y = y;
@@ -3188,8 +3212,9 @@ void TFDIRContainer::SetAvg()		  // Set the V, I vectors from raw FFT vector buf
             sn->Ibuf[0].flg = DATA_NO;
         }
 // Check line Flag
-        if (!s->LineFlg && s->LineFlgTimer < 0.7*IcsNode.Cfg->RtnTime) { // Line is no current on any phase
-           s->LineFlgTimer += IcsNode.Cycle2Sec;  // Count timer for setting LineFlg dead
+//        if (!s->LineFlg && s->LineFlgTimer < 0.7*IcsNode.Cfg->RtnTime) { // Line is no current on any phase
+        if (!s->LineFlg && s->LineFlgTimer < IcsNode.Cfg->DeadTime) { // Line is no current on any phase
+            s->LineFlgTimer += IcsNode.Cycle2Sec;  // Count timer for setting LineFlg dead
            s->LineFlg = PHASE_ABC;  // Fake the LineFlg until time up
         }
 // Calculate Neutral Current
@@ -3888,10 +3913,31 @@ void TFDIRContainer::DetectFault()		// Fault detection
                         if (s->Evt[k].FltZone > 0 && (s->Evt[k].FltZone < s->FltZone || s->FltZone == 0))
                             s->FltZone = s->Evt[k].FltZone;
                     }
-                    if ((k > 0 && s->Evt[0].FltDirSum == FAULT_BACKWARD) ||
+
+                    if ((k >= 0 && s->Evt[0].FltDirSum == FAULT_BACKWARD) ||
                         (k >= 1 && s->Evt[1].FltDirSum == FAULT_BACKWARD) ||
                         (k >= 2 && s->Evt[2].FltDirSum == FAULT_BACKWARD)) {
-                        if (s->Cfg->UseCfgZone) {
+//                        k = IcsNode.TrpCnt;
+                        k = IcsNode.TrpCnt - CfgNode.TfdirRclNum;
+
+                        if (IcsNode.Cfg->PeerCommFDIR && !P2PNode.Set[i].FltZoneUn) {
+                            if (k >= 1 && P2PNode.Set[i].FltZone == 1) {
+                                s->OpenSw = (s->OpenSw == 0) ? 1 : s->OpenSw;
+                                if (s->Cfg->SetTyp == SET_TYPE_TAP && !s->Cfg->SwitchEnabled) { // Tap switch is not available to open
+                                    stat = s->FltZone;
+                                    for (j = 0; j < MAX_SETS; j++) {
+                                        s = &IcsNode.IcsSet[j];
+                                        if (!s->Cfg->SrvFlg)
+                                            continue;
+                                        if (s->Cfg->SetTyp == SET_TYPE_LINE) {
+                                            s->FltZone = (s->OpenSw == 0) ? stat : s->FltZone;
+                                            s->OpenSw = (s->OpenSw == 0) ? 1 : s->OpenSw;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        else if (s->Cfg->UseCfgZone && (s->FltZone <= 0 || s->FltZone >= s->Cfg->CfgZone)) {
                             if ((s->Cfg->UseCfgZone == 1 && k >= s->Cfg->CfgZone) ||
                                 (s->Cfg->UseCfgZone == 2 && k == s->Cfg->CfgZone+s->FltZone) ||
                                 (s->Cfg->UseCfgZone == 3 && s->FltZone == 1 && k == 1) ||
@@ -3915,9 +3961,8 @@ void TFDIRContainer::DetectFault()		// Fault detection
                                 }
                             }
                         }
-                        else if ((s->FltZone > 0 && s->FltZone <= 2 && IcsNode.TrpCnt == s->FltZone+1) ||
-                                 (IcsNode.TrpCnt == 1 && s->FltZone == 1 &&
-                                  IcsNode.DnTimer >= IcsNode.Cfg->RclWaitTime)) {
+                        else if (s->FltZone <= 2 && s->FltZone == k || (IcsNode.TrpCnt == 1 && s->FltZone == 1 &&
+                                  IcsNode.DnTimer >= 1.1*IcsNode.Cfg->RclWaitTime)) { // Faulted trip no reclosing
                             s->OpenSw = (s->OpenSw == 0) ? 1 : s->OpenSw;
                             if (s->Cfg->SetTyp == SET_TYPE_TAP && !s->Cfg->SwitchEnabled) { // Tap switch is not available to open
                                 stat = s->FltZone;
@@ -3953,8 +3998,8 @@ void TFDIRContainer::DetectFault()		// Fault detection
         IcsNode.DnTimer += IcsNode.Cycle2Sec;    // count dead time in seconds, add one cycle time
         if (IcsNode.TrpCnt > 0) {
             if (IcsNode.RclCnt >= IcsNode.Cfg->MaxRclNum || // Max rcls number reached
-                IcsNode.DnTimer > IcsNode.Cfg->DeadTime ||
-                IcsNode.DnTimer > IcsNode.Cfg->RclWaitTime) // Line is permernently dead and locked
+//                IcsNode.DnTimer > IcsNode.Cfg->DeadTime ||
+                IcsNode.DnTimer > 1.1*IcsNode.Cfg->RclWaitTime) // Line is permernently dead and locked
                 IcsNode.FltLck = EVENT_PERMANENT;
         }
 // Clear SV buffers and Prefault averages
@@ -4494,9 +4539,7 @@ int TFDIRContainer::TakeAction ()  // Report fault and normal V, I, P, Q
             IcsNode.IcsSet[i].FltCnt = 0;
             IcsNode.IcsSet[i].FltZone = 0;
             IcsNode.IcsSet[i].OpenSw = 0;
-
             memset(IcsNode.IcsSet[i].Evt, 0, EVT_Total_Size);
-
             //***
             //should clear out the samples and the samples?
             //***
@@ -4506,6 +4549,8 @@ int TFDIRContainer::TakeAction ()  // Report fault and normal V, I, P, Q
                 memset(&IcsNode.IcsSet[i].IcsSns[j].Ibuf, 0, (BUF_SIZE+1)*XY_Size);
                 memset(&IcsNode.IcsSet[i].IcsSns[j].Vbuf, 0, (BUF_SIZE+1)*XY_Size);
             }
+
+            P2PNode.Set[i].FltReset = 1;
         }
 // Clear fault lock information
         IcsNode.RclCnt = 0;
@@ -4568,7 +4613,6 @@ int TFDIRContainer::TakeAction ()  // Report fault and normal V, I, P, Q
             IcsNode.IcsSet[i].FltZone = 0;
             IcsNode.IcsSet[i].OpenSw = 0;
             memset(IcsNode.IcsSet[i].Evt, 0, EVT_Total_Size);
-
             //***
             //should clear out the samples and the samples?
             //***
@@ -4578,6 +4622,8 @@ int TFDIRContainer::TakeAction ()  // Report fault and normal V, I, P, Q
                 memset(&IcsNode.IcsSet[i].IcsSns[j].Ibuf, 0, (BUF_SIZE+1)*XY_Size);
                 memset(&IcsNode.IcsSet[i].IcsSns[j].Vbuf, 0, (BUF_SIZE+1)*XY_Size);
             }
+
+            P2PNode.Set[i].FltReset = 1;
         }
 // Clear fault lock information
         IcsNode.Flt2Long = 0;
