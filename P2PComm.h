@@ -63,7 +63,6 @@ typedef struct { // Peer config
 typedef struct { // Peer switch info
     FLAG  P2PState; // P2P Comm. OK? 0/1 -> no/yes.
     FLAG  FltDir;   // Fault direction: 00/01/10/11 no/FORWARD/BACKWARD/UNKNOWN received from this peer
-//    FLAG  FltPhs;   // Fault phase code: 000/001/010/100/011/101/110/111
     FLAG  FltGot;   // Fault information received from this peer -> 0/1/2 No/Yes/TimeOut
     int   LastExec; // ExecCt Mark when the P2P updating received last time for the peer
     int   FltSentMark; // ExecCt Mark when Status/Fault infor was sent

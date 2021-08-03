@@ -17,15 +17,19 @@
 
 #ifndef RUNNING_TEST
     TFDIRContainer::TFDIRContainer(CircularBuffer *circularBuf) {
+
         // TODO Auto-generated constructor stub
         gCircularBuf = circularBuf;
 
         Initialize();
     }
 #else
-    TFDIRContainer::TFDIRContainer() {
-        // TODO Auto-generated constructor stub
-
+//    TFDIRContainer::TFDIRContainer() {
+// TODO Auto-generated constructor stub
+        TFDIRContainer::TFDIRContainer(Pathological *pathological, OPERATINGMODE mode, CONTROLMODE cMode) {
+        this->pathological = pathological;
+        this->operatingMode = mode;
+        this->controlMode = cMode;
         Initialize();
 }
 #endif
@@ -287,8 +291,8 @@ int TFDIRContainer::parseConfig(char *configContents) {
             "ReportMomentEvent",
             //		"ReportOprValues",
             "AutoSwitchOpen",
-            "NumOfRclsTimes",
-            "NumOfRclsForTFDIR",
+            "NumofRclsTimes",
+            "NumofRclsTFDIR",
             NULL
     };
 
@@ -926,8 +930,8 @@ void TFDIRContainer::resetAllBuffers() {
     memset(&prevSample, 0, MAX_SETS*MES_PHASES*sizeof(DataStream));
 
     for(int i=0; i<MAX_SETS-1; i++) {
-        SmpNode.SmpSet[i].t.sec = 0;
-        SmpNode.SmpSet[i].t.usec = 0;
+        SmpNode.SmpSet[i].t.tv_sec = 0;
+        SmpNode.SmpSet[i].t.tv_usec = 0;
         memset(&SmpNode.SmpSet[i].I, 0, MES_PHASES*SV_CYC_SIZE*sizeof(float));
         memset(&SmpNode.SmpSet[i].V, 0, MES_PHASES*SV_CYC_SIZE*sizeof(float));
     }
@@ -1144,8 +1148,8 @@ void TFDIRContainer::genRawSamples() {//test only
 
     for(int i=0; i<MAX_SETS-1; i++) {
 
-        SmpNode.SmpSet[i].t.sec = 0;
-        SmpNode.SmpSet[i].t.usec = 0;
+        SmpNode.SmpSet[i].t.tv_sec = 0;
+        SmpNode.SmpSet[i].t.tv_usec = 0;
 
         for (int j=0; j<MES_PHASES; j++) {
 
@@ -1233,8 +1237,8 @@ void TFDIRContainer::genRawSamplesHardCoded() {//test only
 
     for(int i=0; i<MAX_SETS-1; i++) {
 
-        SmpNode.SmpSet[i].t.sec = 0;
-        SmpNode.SmpSet[i].t.usec = 0;
+        SmpNode.SmpSet[i].t.tv_sec = 0;
+        SmpNode.SmpSet[i].t.tv_usec = 0;
 
         for (int j=0; j<MES_PHASES; j++) {
 
@@ -1312,8 +1316,8 @@ int TFDIRContainer::GetSamples(int CallFlag)
             }
             q[j] = pkt.dataQuality;
             if (j == 0) {
-                SmpNode.SmpSet[i].t.sec  = pkt.timestamp_sec;
-                SmpNode.SmpSet[i].t.usec = pkt.timestamp_usec;
+                SmpNode.SmpSet[i].t.tv_sec  = pkt.timestamp_sec;
+                SmpNode.SmpSet[i].t.tv_usec = pkt.timestamp_usec;
             }
             if (pkt.dataQuality) continue;
             n++;
@@ -1433,8 +1437,8 @@ int TFDIRContainer::GetSamplesReversed(int CallFlag)
             }
             q[j] = pkt.dataQuality;
             if (j == 0) {
-                SmpNode.SmpSet[i].t.sec  = pkt.timestamp_sec;
-                SmpNode.SmpSet[i].t.usec = pkt.timestamp_usec;
+                SmpNode.SmpSet[i].t.tv_sec  = pkt.timestamp_sec;
+                SmpNode.SmpSet[i].t.tv_usec = pkt.timestamp_usec;
             }
             if (pkt.dataQuality) continue;
             n++;
@@ -2426,10 +2430,10 @@ void TFDIRContainer::calcPhasors(int set, int phase) {
             if (l == 3) l = 2;
             IcsNode.IcsSet[i].IcsSns[l].Ibuf[0].flg = SmpNode.SmpSet[i].Iflg[k];
 //            IcsNode.IcsSet[i].IcsSns[l].Vbuf[0].t   = SmpNode.SmpSet[i].t;
-            IcsNode.IcsSet[i].IcsSns[l].Ibuf[0].t.sec = masterSec;
-            IcsNode.IcsSet[i].IcsSns[l].Ibuf[0].t.usec = masterUsec;
-            IcsNode.IcsSet[i].IcsSns[l].Vbuf[0].t.sec = masterSec;
-            IcsNode.IcsSet[i].IcsSns[l].Vbuf[0].t.usec = masterUsec;
+            IcsNode.IcsSet[i].IcsSns[l].Ibuf[0].t.tv_sec = masterSec;
+            IcsNode.IcsSet[i].IcsSns[l].Ibuf[0].t.tv_usec = masterUsec;
+            IcsNode.IcsSet[i].IcsSns[l].Vbuf[0].t.tv_sec = masterSec;
+            IcsNode.IcsSet[i].IcsSns[l].Vbuf[0].t.tv_usec = masterUsec;
             IcsNode.IcsSet[i].IcsSns[l].Vbuf[0].flg = SmpNode.SmpSet[i].Vflg[k];
 
 //            double phaseSmpTime = (double)SmpNode.SmpSet[i].phase_t[l].sec + (double)SmpNode.SmpSet[i].phase_t[l].usec/1000000.0 - cycleDuration;
@@ -2440,10 +2444,10 @@ void TFDIRContainer::calcPhasors(int set, int phase) {
 
             timeDiff = masterSmpTime - phaseSmpTime - refTimeDiff;
 
-            SmpNode.SmpSet[i].IRefPhasor[l].t.sec = phaseSec;
-            SmpNode.SmpSet[i].IRefPhasor[l].t.usec = phaseUsec;
-            SmpNode.SmpSet[i].VRefPhasor[l].t.sec  = phaseSec;
-            SmpNode.SmpSet[i].VRefPhasor[l].t.usec = phaseUsec;
+            SmpNode.SmpSet[i].IRefPhasor[l].t.tv_sec = phaseSec;
+            SmpNode.SmpSet[i].IRefPhasor[l].t.tv_usec = phaseUsec;
+            SmpNode.SmpSet[i].VRefPhasor[l].t.tv_sec  = phaseSec;
+            SmpNode.SmpSet[i].VRefPhasor[l].t.tv_usec = phaseUsec;
 
             //check to see if there's too long of a gap (>8 samples) to the master clock.
             //if there is a gap then the phasor should be 0
@@ -2859,7 +2863,7 @@ void TFDIRContainer::VI2PQ(float *P, float *Q, PHASOR *V, PHASOR *I)
 
 float TFDIRContainer::TimeDiff (TIME *t1, TIME *t2)
 {
-    float t = 1000.0*(float)(t1->sec - t2->sec) + (float)(t1->usec - t2->usec)/1000.0;
+    float t = 1000.0*(float)(t1->tv_sec - t2->tv_sec) + (float)(t1->tv_usec - t2->tv_usec)/1000.0;
     return t; // Milli Seconds
 }
 
@@ -3921,7 +3925,7 @@ void TFDIRContainer::DetectFault()		// Fault detection
                         k = IcsNode.TrpCnt - CfgNode.TfdirRclNum;
 
                         if (IcsNode.Cfg->PeerCommFDIR && !P2PNode.Set[i].FltZoneUn) {
-                            if (k >= 1 && P2PNode.Set[i].FltZone == 1) {
+                            if (k >= 1 && P2PNode.Set[i].FltZone == 1 ) {
                                 s->OpenSw = (s->OpenSw == 0) ? 1 : s->OpenSw;
                                 if (s->Cfg->SetTyp == SET_TYPE_TAP && !s->Cfg->SwitchEnabled) { // Tap switch is not available to open
                                     stat = s->FltZone;

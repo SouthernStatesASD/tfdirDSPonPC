@@ -57,10 +57,10 @@
 typedef unsigned short FLAG;
 
 // Time
-typedef struct {
-    long  sec;	// Seconds
-    long  usec;	// Micro Seconds
-} TIME;
+//typedef struct {
+//    long  sec;	// Seconds
+//    long  usec;	// Micro Seconds
+//} TIME;
 
 // xy value struct
 typedef struct {
@@ -353,6 +353,12 @@ typedef struct
     long long timeCt;
 } ExecutionStamp;
 
+enum CONTROLMODE {
+    NOCONTROL, //no direct control of the switch, will generate control operation step
+    RELAY, //control switch using a relay
+    AUXCONTROL //control switch with the aux-control module
+};
+
 using namespace std;
 
 #ifndef RUNNING_TEST
@@ -376,15 +382,17 @@ public:
 
     Pathological *pathological;
     OPERATINGMODE operatingMode;
-//    CONTROLMODE controlMode;
+    CONTROLMODE controlMode;
 
     CIRC_SAMPLES CircSamples;
     PHASORS PhasorsObj;
 
 #ifndef RUNNING_TEST
     TFDIRContainer(CircularBuffer *circularBuf);
+
 #else
-    TFDIRContainer();
+//    TFDIRContainer();
+    TFDIRContainer(Pathological *pathological, OPERATINGMODE mode, CONTROLMODE cMode);
 #endif
 
     virtual ~TFDIRContainer();
@@ -435,12 +443,12 @@ public:
     void SetAvg();
     void SetFault();
     void DetectFault();
-    int TakeAction ();
+    int  TakeAction ();
     void resetAllBuffers();
 
     int  GetPeersMsgs();
     int  SendPeersMsgs();
-    void InitP2PCfg();
+//    void InitP2PCfg();
     void P2PFaultScheme();
     void GetOprData();
     void FromPeer();
@@ -536,10 +544,10 @@ private:
     int  populateNode(PARAM param);
     void populateSet(PARAM param, CFG_SET *Set);
     void populateSns(PARAM param, CFG_SNS *Sensor);
-    int checkNode();
-    int checkSet();
-    int checkSns();
-    int VoltModel();
+    int  checkNode();
+    int  checkSet();
+    int  checkSns();
+    int  VoltModel();
 
     static bool sortBufferByTime(DataStream &data1, DataStream &data2);
     int numSamplesAway(double time, double timeRef, double timeRange);

@@ -5,6 +5,14 @@
 #ifndef CONSTANTS_H_
 #define CONSTANTS_H_
 
+#include <vector>
+#include <math.h>
+#include <string.h>
+#include <sys/time.h>
+#include <stdint.h>
+#include <stdlib.h>
+#include <vector>
+
 #define PC_DEBUG		// PC Version Debugging
 //#define PC_DEBUG_STEP
 #define RUNNING_TEST
@@ -37,9 +45,11 @@
 //#define CFG_FILE_PATH "C:/Users/jfan/Workspace_v6.0/TFDIR/Cfg/xAEPhuff.x"
 //#define CFG_FILE_PATH "C:/Users/jfan/Workspace_v6.0/TFDIR/Cfg/xAEPhan.x"
 //#define CFG_FILE_PATH "C:/Users/jfan/Workspace_v6.0/TFDIR/Cfg/xFirstEnergy.x"
-#define CFG_FILE_PATH   "C:/Users/jfan/Workspace_v6.0/TFDIR/Cfg/xDom_F.x"
+//#define CFG_FILE_PATH   "C:/Users/jfan/Workspace_v6.0/TFDIR/Cfg/xDom_F.x"
+#define CFG_FILE_PATH   "/home/jiyuan/Documents/Tconfigs/Line27LongCreak.txt"
 
 typedef unsigned short FLAG;
+typedef timeval TIME;
 
 // Enumerations
 enum PHASES {
